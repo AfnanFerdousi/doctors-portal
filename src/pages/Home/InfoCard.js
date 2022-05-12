@@ -2,7 +2,7 @@ import React from 'react';
 
 const InfoCard = ({img, cardTitle, bgClass}) => {
     return (
-        <div className={`card lg:card-side bg-base-100 shadow-xl px-5 ${bgClass}`}>
+        <div className={`card lg:card-side shadow-xl px-5 ${bgClass}`}>
             <figure className='pl-3'>
                 <img src={img} alt="Album"/>
             </figure>
