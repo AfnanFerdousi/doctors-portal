@@ -1,33 +1,42 @@
 import React, { useState, useEffect } from 'react';
 import {format} from 'date-fns';
+import { useQuery } from 'react-query'
 import Service from './Service';
-import BookingModal from './BookingModal'
+import BookingModal from './BookingModal';
+import Loading from '../Shared/Loading';
 
 const AvailableAppoinments = ({date}) => {
-    const [services, setServices] = useState([]);
-    const [treatment, setTreatment] = useState(null);
+    const [treatment, setTreatment] = useState(null);    
+    const formattedDate = format(date, "PP");
 
-    useEffect(() => {
-        fetch('http://localhost:5000/service')
-        .then(res => res.json())
-        .then(data => setServices(data))
-    },[])
+    const {data: services, isLoading, refetch} = useQuery(['available', formattedDate], () => fetch(`http://localhost:5000/available?date=${formattedDate}`)
+    .then(res => res.json())
+    )
+
+    if(isLoading){
+        return <Loading/>
+    }
+
     return (
         <div className="my-20 px-12">
             <h5 className='text-primary text-center font-bold mb-20'>Available Appoinments On {format(date, 'PP')}</h5> 
 
             <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5'>
                 {
-                    services.map(service => <Service
+                    services?.map(service => <Service
                         key={service._id}
                         service={service} 
-                        setTreatment={setTreatment}                       
+                        setTreatment={setTreatment} 
+                                             
                     ></Service>)
                 }
             </div>   
-            {treatment && <BookingModal date={date}
+            {treatment && <BookingModal 
+            date={date}
             setTreatment={setTreatment}
-             treatment={treatment}></BookingModal>}       
+             treatment={treatment}
+             refetch={refetch} 
+             ></BookingModal>}       
         </div>
     );
 };
