@@ -2,7 +2,7 @@ import { signOut } from 'firebase/auth';
 import React, { useEffect, useState } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import auth from '../../firebase.init';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const MyAppoinment = () => {
     const [appoinments, setAppoinments] = useState([]);
@@ -11,14 +11,13 @@ const MyAppoinment = () => {
 
     useEffect(() => {
         if (user) {
-            fetch(`http://localhost:5000/booking?patient=${user.email}`, {
+            fetch(`https://radiant-hollows-72125.herokuapp.com/booking?patient=${user.email}`, {
                 method: 'GET',
                 headers: {
                     'authorization': `Bearer ${localStorage.getItem('accessToken')}`
                 }
             })
                 .then(res => {
-                    console.log('res', res);
                     if (res.status === 401 || res.status === 403) {
                         signOut(auth);
                         localStorage.removeItem('accessToken');
@@ -33,9 +32,9 @@ const MyAppoinment = () => {
     }, [user])
     return (
         <div>
-            <h2 className='p-5'>My Appoinments: {appoinments.length}</h2>
-            <div class="overflow-x-auto p-5">
-                <table class="table w-full">
+            <h2 className='text-2xl pl-5'>My Appoinments: {appoinments.length}</h2>
+            <div className="overflow-x-auto p-5">
+                <table className="table w-full">
                     <thead>
                         <tr>
                             <th></th>
@@ -43,16 +42,30 @@ const MyAppoinment = () => {
                             <th>Date</th>
                             <th>Time</th>
                             <th>Treatment</th>
+                            <th>Payment</th>
                         </tr>
                     </thead>
                     <tbody>
                         {
-                            appoinments.map((a, index) => <tr>
+                            appoinments.map((a, index) => <tr key={a._id}>
                                 <th>{index + 1}</th>
                                 <td>{a.patientName}</td>
                                 <td>{a.date}</td>
                                 <td>{a.slot}</td>
                                 <td>{a.treatment}</td>
+                                <td>
+                                    {
+                                     (a.price && !a.paid)
+                                      && 
+                                     <Link to={`/dashboard/payment/${a._id}`}>
+                                      <button className='btn btn-xs btn-success'>Pay</button>
+                                     </Link>}
+
+                                     {(a.price && a.paid) && <div>
+                                        <p><span className='text-success font-bold'>Paid</span></p>
+                                        <p>Transaction id: <span className='text-orange'>{a.transactionId}</span></p>
+                                    </div>}
+                                </td>
                             </tr>)
                         }
 
